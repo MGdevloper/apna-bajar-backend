@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
-
-const CustomerSchema = new mongoose.Schema({
+import { deliverypartnerschema } from "./deliverypartner.model.js";
+const ShopkeeperSchema = new mongoose.Schema({
   email:{
 
     type:String,
     required:true,
     unique:true,
+    lowercase:true,
     index:true
   },
 
@@ -13,8 +14,17 @@ const CustomerSchema = new mongoose.Schema({
 
     type:String,
     required:true,
-     unique:true
+     unique:true,
+     trim:true
   },
+  shopname:{
+
+    type:String,
+    required:true,
+    trim:true
+     
+  },
+  
   password:{
     type:String,
     required:true
@@ -34,15 +44,15 @@ const CustomerSchema = new mongoose.Schema({
   otp:{
     type:String,
     
+    
   },
   otpExpireTime:{
     type:Number
   },
 
-  address: {
-    house: { type: String, trim: true },
+  shopaddress: {
     area: { type: String, trim: true },
-    landmark: { type: String, trim: true },
+    
     city: { type: String, trim: true },
     state: { type: String, trim: true },
     pincode: { type: String },
@@ -60,14 +70,18 @@ const CustomerSchema = new mongoose.Schema({
     }
   },
 
+  deliverypartners:{
+    type:[deliverypartnerschema],
+    required:true
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 
-});
+},{timestamps:true});
 
 
-CustomerSchema.index({ "address.location": "2dsphere" });
+ShopkeeperSchema.index({ "shopaddress.location": "2dsphere" });
 
-export default mongoose.model("Customer", CustomerSchema);
+export default mongoose.model("Shopkeeper", ShopkeeperSchema);

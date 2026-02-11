@@ -1,5 +1,6 @@
 import { Router } from "express";
 import customerModel from "../models/customer.model.js";
+import bcrypt from "bcrypt"
 let customersaveroute = Router()
 /*{
   customerData: {
@@ -26,6 +27,7 @@ customersaveroute.post("/savecustomer", async (req, res, next) => {
 
     if (existingcustomer) {
         
+        
 
         if (existingcustomer.phone === phone) {
             return res.json({ reason: "already exists", message: "customer already exists with same phone" })
@@ -40,11 +42,14 @@ customersaveroute.post("/savecustomer", async (req, res, next) => {
         }
 
     }
+    
+    let passwordHash=await bcrypt.hash(password,bcrypt.genSaltSync(10))
 
     let newcustomer = new customerModel({
+
+        password:passwordHash,
         name: fullname,
         email,
-        password,
         phone,
         address: {
             house,
