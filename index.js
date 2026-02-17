@@ -5,15 +5,20 @@ import customersaveroute from './routes/savecustomer.route.js'
 import sendotproute from './routes/sendotp.route.js'
 import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
+import cors from "cors"
 
 import forgotpassword from './routes/forgotpassword.route.js'
 dotenv.config()
 
 
 
-const app=express()
+const app = express()
 app.use(express.json())
-
+app.use(cors({
+    origin: "*", // or limit to your frontend origin, e.g. "http://localhost:5173"
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+}))
 app.use(customersaveroute)
 app.use(shopekeeperrouter)
 app.use(sendotproute)
@@ -21,6 +26,6 @@ app.use(verifyotproute)
 app.use(forgotpassword)
 app.listen(process.env.PORT,"0.0.0.0",()=>{
     dbconnect();
-    console.log("http://localhost:"+process.env.PORT);
-    
+    console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);
+
 })
