@@ -6,6 +6,7 @@ import sendotproute from './routes/sendotp.route.js'
 import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
 
+import forgotpassword from './routes/forgotpassword.route.js'
 dotenv.config()
 
 
@@ -17,7 +18,7 @@ app.use(customersaveroute)
 app.use(shopekeeperrouter)
 app.use(sendotproute)
 app.use(verifyotproute)
-
+app.use(forgotpassword)
 app.listen(process.env.PORT,()=>{
     dbconnect();
     console.log("http://localhost:"+process.env.PORT);

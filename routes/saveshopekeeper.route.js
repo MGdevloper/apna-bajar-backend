@@ -1,5 +1,6 @@
 import { Router } from "express";
-import shopkeeperModel from "../models/shopkeeper.model.js";
+import {shopkeeperModel} from "../models/shopkeeper.model.js";
+import { customerModel } from "../models/customer.model.js";
 import bcrypt from "bcrypt"
 
 const shopekeeperrouter = Router()
@@ -12,29 +13,36 @@ shopekeeperrouter.post('/saveshopekeeper', async (req, res) => {
     console.log(data);
     console.log('====================================');
     
-    //Check existing email or phone
+    //Check existing email or phone in shopkeeper
     const existingShopkeeper = await shopkeeperModel.findOne({
       $or: [
         { email: data.email },
         { phone: data.phone }
       ]
     });
-
     if (existingShopkeeper) {
-
       if (existingShopkeeper.email === data.email) {
         return res.json({
           success: false,
           message: "Shopkeeper already exists with this email"
         });
       }
-
       if (existingShopkeeper.phone === data.phone) {
         return res.json({
           success: false,
           message: "Shopkeeper already exists with this phone"
         });
       }
+    }
+
+    // Check if email exists in customer model
+    
+    const existingCustomer = await customerModel.findOne({ email: data.email });
+    if (existingCustomer) {
+      return res.json({
+        success: false,
+        message: "Email already exists"
+      });
     }
 
     

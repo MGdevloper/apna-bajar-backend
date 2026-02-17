@@ -1,34 +1,34 @@
 import mongoose from "mongoose";
 import { deliverypartnerschema } from "./deliverypartner.model.js";
 const ShopkeeperSchema = new mongoose.Schema({
-  email:{
+  email: {
 
-    type:String,
-    required:true,
-    unique:true,
-    lowercase:true,
-    index:true
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    index: true
   },
 
-  name:{
+  name: {
 
-    type:String,
-    required:true,
-     unique:true,
-     trim:true
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  shopname:{
+  shopname: {
 
-    type:String,
-    required:true,
-    trim:true
-     
+    type: String,
+    required: true,
+    trim: true
+
   },
-  
-  password:{
-    type:String,
-    required:true
-    
+
+  password: {
+    type: String,
+    required: true
+
   },
 
   phone: {
@@ -39,20 +39,20 @@ const ShopkeeperSchema = new mongoose.Schema({
 
   isVerified: {
     type: Boolean,
-    default: false  
+    default: false
   },
-  otp:{
-    type:String,
-    
-    
+  otp: {
+    type: String,
+
+
   },
-  otpExpireTime:{
-    type:Number
+  otpExpireTime: {
+    type: Number
   },
 
   shopaddress: {
     area: { type: String, trim: true },
-    
+
     city: { type: String, trim: true },
     state: { type: String, trim: true },
     pincode: { type: String },
@@ -70,18 +70,25 @@ const ShopkeeperSchema = new mongoose.Schema({
     }
   },
 
-  deliverypartners:{
-    type:[deliverypartnerschema],
-    required:true
+  deliverypartners: {
+    type: [deliverypartnerschema],
+    required: true
   },
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  resetpassotp: {
+    type: String,
 
-},{timestamps:true});
+  },
+  restotpExpireTime: {
+    type: Number
+  },
+
+}, { timestamps: true });
 
 
 ShopkeeperSchema.index({ "shopaddress.location": "2dsphere" });
 
-export default mongoose.model("Shopkeeper", ShopkeeperSchema);
+export const shopkeeperModel = mongoose.model("Shopkeeper", ShopkeeperSchema);

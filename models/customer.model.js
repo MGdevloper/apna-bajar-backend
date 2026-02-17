@@ -65,9 +65,18 @@ const CustomerSchema = new mongoose.Schema({
     default: Date.now
   }
 
+  ,
+  resetpassotp:{
+    type:String,
+    
+  },
+  restotpExpireTime:{
+    type:Number
+  },
+
 });
 
 
 CustomerSchema.index({ "address.location": "2dsphere" });
 
-export default mongoose.model("Customer", CustomerSchema);
+export const customerModel=mongoose.model("Customer", CustomerSchema);

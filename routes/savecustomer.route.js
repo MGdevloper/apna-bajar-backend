@@ -1,5 +1,6 @@
 import { Router } from "express";
-import customerModel from "../models/customer.model.js";
+import {customerModel} from "../models/customer.model.js";
+import {shopkeeperModel} from "../models/shopkeeper.model.js";
 import bcrypt from "bcrypt"
 let customersaveroute = Router()
 /*{
@@ -22,25 +23,24 @@ customersaveroute.post("/savecustomer", async (req, res, next) => {
     let { phone, house, area, city, pincode, landmark, state, latLong, fullname, password, email } = req.body;
 
 
-    //check if customer already exists phone email fullname
+    // Check if customer already exists (phone, email, fullname)
     let existingcustomer = await customerModel.findOne({ $or: [{ phone }, { email }, { name: fullname }] })
-
     if (existingcustomer) {
-        
-        
-
         if (existingcustomer.phone === phone) {
             return res.json({ reason: "already exists", message: "customer already exists with same phone" })
         }
         if (existingcustomer.email === email) {
-
-
             return res.json({ reason: "already exists", message: "customer already exists with same email" })
         }
         if (existingcustomer.name === fullname) {
             return res.json({ reason: "already exists", message: "customer already exists with same name" })
         }
+    }
 
+    // Check if email exists in shopkeeper model
+    let existingShopkeeper = await shopkeeperModel.findOne({ email });
+    if (existingShopkeeper) {
+        return res.json({ reason: "already exists", message: "email already exists" });
     }
     
     let passwordHash=await bcrypt.hash(password,bcrypt.genSaltSync(10))
