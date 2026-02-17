@@ -7,6 +7,8 @@ import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
 import cors from "cors"
 
+
+
 import forgotpassword from './routes/forgotpassword.route.js'
 dotenv.config()
 
