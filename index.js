@@ -26,7 +26,7 @@ app.use(shopekeeperrouter)
 app.use(sendotproute)
 app.use(verifyotproute)
 app.use(forgotpassword)
-app.listen(process.env.PORT,"0.0.0.0",()=>{
+app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);
 
