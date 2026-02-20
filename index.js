@@ -5,9 +5,10 @@ import customersaveroute from './routes/savecustomer.route.js'
 import sendotproute from './routes/sendotp.route.js'
 import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
+import deliverypartnerverifyroute from './routes/verifydeliverypartner.route.js'
 import cors from "cors"
 
-
+import loginroute from './routes/login.route.js'
 
 import forgotpassword from './routes/forgotpassword.route.js'
 dotenv.config()
@@ -26,6 +27,8 @@ app.use(shopekeeperrouter)
 app.use(sendotproute)
 app.use(verifyotproute)
 app.use(forgotpassword)
+app.use(loginroute)
+app.use(deliverypartnerverifyroute)
 app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);

@@ -29,10 +29,12 @@ async function sendEmail(toEmail, name,subject, htmlContent) {
     try {
         const response = await apiInstance.sendTransacEmail(email);
         console.log("✅ Email sent successfully");
-        console.log(response);
+        
+        // console.log(response);
     } catch (error) {
         console.error("❌ Brevo API error");
         console.error(error.response?.body || error);
+        throw new Error("Failed to send email");
     }
 }
 

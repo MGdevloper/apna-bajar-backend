@@ -88,11 +88,11 @@ export const verifyotp = async (req, res, next) => {
     let { email, otp, role } = req.body
 
     console.log('====================================');
-    console.log(email,otp,role);
+    console.log(email, otp, role);
     console.log('====================================');
     if (role == "customer") {
-        console.log("in customer",email);
-        
+        console.log("in customer", email);
+
         let user = await customerModel.findOne({ email: email })
 
         if (!user) {
@@ -120,8 +120,8 @@ export const verifyotp = async (req, res, next) => {
 
     else if (role == "shopkeeper") {
         let user = await shopkeeperModel.findOne({ email: email })
-        console.log("in shopkeeper",email);
-        
+        console.log("in shopkeeper", email);
+
         if (!user) {
             return res.json({ message: "invalid user" })
         }
@@ -148,4 +148,42 @@ export const verifyotp = async (req, res, next) => {
 
 
 
+}
+
+export const deliverypartnerotpverify = async (req, res, next) => {
+    let { email, otp } = req.body
+    console.log('====================================');
+    console.log(email, otp);
+    console.log('====================================');
+    let shop = await shopkeeperModel.findOne({
+
+        "deliverypartners.email": email
+
+
+    })
+
+
+    if (!shop) {
+        return res.json({ message: "user not found", success: false })
+    }
+
+    let deliverypartner = shop.deliverypartners.find(partner => partner.email === email)
+
+
+
+    if (Date.now() > deliverypartner.otpExpireTime) {
+        return res.json({ message: "otp expired", success: false })
+    }
+
+    let result = await bcrypt.compare(otp, deliverypartner.otp)
+
+
+
+    if (result == false) {
+        return res.json({ message: "invalid otp", success: false })
+    }
+    if (result == true) {
+
+        return res.json({ message: "otp verified ✅", success: true })
+    }
 }

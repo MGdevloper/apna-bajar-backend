@@ -1,18 +1,21 @@
-import { sendotp, verifyotp } from "../controllers/otp.js";
+import { deliverypartnerotpverify, sendotp, verifyotp } from "../controllers/otp.js";
 
 import { Router } from "express";
 
-let sendotproute=Router()
-let verifyotproute=Router()
+let sendotproute = Router()
+let verifyotproute = Router()
 
-sendotproute.post("/sendotp",(req,res,next)=>{
-    sendotp(req,res,next)
+sendotproute.post("/sendotp", (req, res, next) => {
+    sendotp(req, res, next)
 })
 
-verifyotproute.post("/verifyotp",(req,res,next)=>{
-    verifyotp(req,res,next)
+verifyotproute.post("/verifyotp", (req, res, next) => {
+    verifyotp(req, res, next)
 })
 
-export {verifyotproute}
- 
+
+
+
+export { verifyotproute }
+
 export default sendotproute
