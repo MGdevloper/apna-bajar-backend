@@ -3,17 +3,29 @@ import { customerModel } from "../models/customer.model.js";
 import { shopkeeperModel } from "../models/shopkeeper.model.js";
 import bcrypt from 'bcrypt'
 import sendEmail from "../utils/sendmail.js";
+import jwt from "jsonwebtoken"
 export const Login = async (req, res, next) => {
     let { email, password } = req.body
-
+    console.log(email,password);
+    
     let user = await customerModel.findOne({ email })
-
+    console.log(user);
+    
     if (user) {
         let result = await bcrypt.compare(password, user.password)
+       
         if (result == true) {
 
 
-            return res.json({ message: "Login successfully ✅", success: true ,type:"customer"})
+            let payload = {
+                id: user._id,
+                email: user.email,
+                role: "customer"
+            }
+
+
+            let token = jwt.sign(payload, process.env.secret, { expiresIn: "7d" })
+            return res.json({ message: "Login successfully ✅", success: true, type: "customer" ,token})
 
         }
         else {
@@ -27,11 +39,22 @@ export const Login = async (req, res, next) => {
         if (user) {
             let result = await bcrypt.compare(password, user.password)
             if (result == true) {
-                return res.json({ message: "Login successfully ✅", success: true ,type:"shopkeeper" })
+
+                let payload = {
+                    id: user._id,
+                    email: user.email,
+                    role: "shopkeeper"
+                }
+                let token = jwt.sign(payload, process.env.secret, { expiresIn: "7d" })
+
+                return res.json({ message: "Login successfully ✅", success: true, type: "shopkeeper", token })
             }
             else {
                 return res.json({ message: "Invalid credential", success: false })
             }
+        }
+        if(!user){
+            return res.json({ message: "Invalid credential", success: false })
         }
     }
     else {
@@ -59,8 +82,8 @@ export const deliverypartnerLogin = async (req, res, next) => {
     await shop.save()
     try {
 
-         await sendEmail(email, deliverypartners.name, "Login OTP", `<h3> Your OTP for login is </h3> <P> <b>${otp}</b> .It will expire in 5 minutes.</p>`)
-         return res.json({ message: "OTP sent successfully ✅", success: true })
+        await sendEmail(email, deliverypartners.name, "Login OTP", `<h3> Your OTP for login is </h3> <P> <b>${otp}</b> .It will expire in 5 minutes.</p>`)
+        return res.json({ message: "OTP sent successfully ✅", success: true })
     }
     catch (err) {
         console.log("Error sending OTP email:", err);

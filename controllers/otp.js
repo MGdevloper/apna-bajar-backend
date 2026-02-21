@@ -1,7 +1,7 @@
 import { customerModel } from "../models/customer.model.js";
 import { shopkeeperModel } from "../models/shopkeeper.model.js";
 import sendEmail from "../utils/sendmail.js";
-
+import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 
 
@@ -184,6 +184,14 @@ export const deliverypartnerotpverify = async (req, res, next) => {
     }
     if (result == true) {
 
-        return res.json({ message: "otp verified ✅", success: true })
+        let payload = {
+            id: deliverypartner._id,
+            email:deliverypartner.email,
+            role:"deliverypartner"
+        }
+
+        let token=jwt.sign(payload, process.env.secret, { expiresIn: "7d" })
+
+        return res.json({ message: "otp verified ✅", success: true ,token})
     }
 }

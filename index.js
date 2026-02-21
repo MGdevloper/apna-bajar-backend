@@ -11,6 +11,8 @@ import cors from "cors"
 import loginroute from './routes/login.route.js'
 
 import forgotpassword from './routes/forgotpassword.route.js'
+import { get } from 'mongoose'
+import getuserroute from './routes/getuser.route.js'
 dotenv.config()
 
 
@@ -29,6 +31,7 @@ app.use(verifyotproute)
 app.use(forgotpassword)
 app.use(loginroute)
 app.use(deliverypartnerverifyroute)
+app.use(getuserroute)
 app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);
