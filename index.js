@@ -6,6 +6,7 @@ import sendotproute from './routes/sendotp.route.js'
 import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
 import deliverypartnerverifyroute from './routes/verifydeliverypartner.route.js'
+import getprofileroute from './routes/getprofile.js'
 import cors from "cors"
 
 import loginroute from './routes/login.route.js'
@@ -32,6 +33,7 @@ app.use(forgotpassword)
 app.use(loginroute)
 app.use(deliverypartnerverifyroute)
 app.use(getuserroute)
+app.use(getprofileroute)
 app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);
