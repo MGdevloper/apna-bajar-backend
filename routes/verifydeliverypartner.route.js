@@ -8,4 +8,4 @@ deliverypartnerverifyroute.post("/deliverypartnerotpverify",(req,res,next)=>{
     deliverypartnerotpverify(req,res,next)
 })
 
-export default deliverypartnerverifyroute//
+export default deliverypartnerverifyroute

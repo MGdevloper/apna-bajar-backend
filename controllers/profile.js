@@ -1,4 +1,4 @@
-import { json } from "express"
+import e, { json } from "express"
 import { customerModel } from "../models/customer.model.js"
 import { shopkeeperModel } from "../models/shopkeeper.model.js"
 import jwt from "jsonwebtoken"
@@ -34,19 +34,21 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
     try {
-        const { phone, address, role, _id } = req.body;
+        const { phone, address, role, _id, ownername, shopname, category } = req.body;
 
         // Validate required fields
-        console.log(address);
+        console.log('====================================');
+        console.log({ phone, address, role, _id, ownername, shopname, category } );
+        console.log('====================================');
+        if (!_id || !role) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields: _id and role"
+            });
+        }
 
 
         if (role == "customer") {
-            if (!_id || !role) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Missing required fields: _id and role"
-                });
-            }
 
             // Build update object with only provided fields
 
@@ -84,6 +86,96 @@ export const updateProfile = async (req, res, next) => {
 
             }
 
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: "No fields to update"
+                });
+            }
+        }
+
+
+        if (role == "shopkeeper") {
+
+
+
+            if (phone) {
+                console.log("new phone",phone);
+                
+                const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+                    _id,
+                    {phone: phone}
+                    , { new: true, runValidators: true });
+
+
+                await updatedUser.save();
+                console.log('====================================');
+                console.log(updatedUser);
+                console.log('====================================');
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile updated successfully",
+                    data: updatedUser
+                }, { new: true, runValidators: true });
+            }
+            if (ownername) {
+                const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+                    _id,
+                    { name: ownername },
+                    { new: true, runValidators: true }
+                );
+                await updatedUser.save();
+                console.log(updatedUser);
+                
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile updated successfully",
+                    data: updatedUser
+                })
+            }
+            if (shopname) {
+                const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+                    _id,
+                    { shopname: shopname },
+                    { new: true, runValidators: true }
+                );
+                await updatedUser.save();
+                return res.status(200).json({
+
+                    success: true,
+                    message: "Profile updated successfully",
+                    data: updatedUser
+                })
+            }
+            if (category) {
+                const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+                    _id,
+                    { category: category },
+                    { new: true, runValidators: true }
+                );
+                await updatedUser.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile updated successfully",
+                    data: updatedUser
+                })
+            }
+
+            if(address){
+                const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+
+                    _id,
+                    {address: address},
+                    { new: true, runValidators: true }
+                )
+
+                await updatedUser.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile updated successfully",
+                    data: updatedUser
+                })
+            }
             else {
                 return res.status(400).json({
                     success: false,

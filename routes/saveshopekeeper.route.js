@@ -64,6 +64,7 @@ shopekeeperrouter.post('/saveshopekeeper', async (req, res) => {
       shopname: data.shopName,
       password: hashedPassword,
       phone: data.phone,
+      category: data.categorie,
 
       shopaddress: {
         area: data.area,
@@ -85,7 +86,9 @@ shopekeeperrouter.post('/saveshopekeeper', async (req, res) => {
     });
 
     await newShopkeeper.save();
-
+    console.log('====================================');
+    console.log("data:",data);
+    console.log('====================================');
     return res.json({
       success: true,
       message: "Shopkeeper registered successfully"

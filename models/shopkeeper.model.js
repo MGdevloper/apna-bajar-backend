@@ -36,6 +36,12 @@ const ShopkeeperSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  category: {
+    type: String,
+    
+    required: true,
+  
+  },
 
   isVerified: {
     type: Boolean,
