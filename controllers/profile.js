@@ -165,7 +165,7 @@ export const updateProfile = async (req, res, next) => {
                 const updatedUser = await shopkeeperModel.findByIdAndUpdate(
 
                     _id,
-                    {address: address},
+                    {shopaddress:address},
                     { new: true, runValidators: true }
                 )
 
