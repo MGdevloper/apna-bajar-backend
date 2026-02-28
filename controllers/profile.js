@@ -56,9 +56,7 @@ export const updateProfile = async (req, res, next) => {
         const { phone, address, role, _id, ownername, shopname, category, deliverypartner_id, deliverypartner_phone, deliverypartner_name, deliverypartner_email } = req.body;
 
         // Validate required fields
-        console.log('====================================');
-        console.log({ phone, address, role, _id, ownername, shopname, category });
-        console.log('====================================');
+        
         if (!_id || !role) {
             return res.status(400).json({
                 success: false,
@@ -211,7 +209,16 @@ export const updateProfile = async (req, res, next) => {
                     { "deliverypartners._id": deliverypartner_id },
                     { "deliverypartners.$.phone": phone },
                     { new: true, runValidators: true }
+
+
                 )
+                await updatedUser.save();
+
+                return res.status(200).json({
+                    success: true,
+                    message: "Delivery partner updated successfully",
+                    data: updatedUser
+                })
             }
 
             if (deliverypartner_name) {
@@ -220,6 +227,12 @@ export const updateProfile = async (req, res, next) => {
                     { "deliverypartners.$.name": deliverypartner_name },
                     { new: true, runValidators: true }
                 )
+                await updatedUser.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Delivery partner updated successfully",
+                    data: updatedUser
+                })
             }
             if (deliverypartner_email) {
                 const updatedUser = await shopkeeperModel.findOneAndUpdate(
@@ -227,23 +240,51 @@ export const updateProfile = async (req, res, next) => {
                     { "deliverypartners.$.email": deliverypartner_email },
                     { new: true, runValidators: true }
                 )
+                await updatedUser.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Delivery partner updated successfully",
+                    data: updatedUser
+                })
             }
         }
 
-        if(role == "delete_deliverypartner"){
+        if (role == "delete_deliverypartner") {
             const updatedUser = await shopkeeperModel.findOneAndUpdate(
                 { "deliverypartners._id": deliverypartner_id },
                 { $pull: { deliverypartners: { _id: deliverypartner_id } } },
                 { new: true, runValidators: true }
             )
+
+            await updatedUser.save();
+            return res.status(200).json({
+                success: true,
+                message: "Delivery partner deleted successfully",
+                data: updatedUser
+            })
         }
 
-        if(role == "add_deliverypartner"){
+        if (role == "add_deliverypartner") {
+            const existingPartner = await shopkeeperModel.findOne({ "deliverypartners.email": deliverypartner_email });
+            if (existingPartner) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Delivery partner with this email already exists"
+                })
+            }
+
             const updatedUser = await shopkeeperModel.findByIdAndUpdate(
                 _id,
                 { $push: { deliverypartners: { name: deliverypartner_name, email: deliverypartner_email, phone: deliverypartner_phone } } },
                 { new: true, runValidators: true }
             )
+
+            await updatedUser.save();
+            return res.status(200).json({
+                success: true,
+                message: "Delivery partner added successfully",
+                data: updatedUser
+            })
         }
         // Update only the fields present in req.body
     } catch (error) {
