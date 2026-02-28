@@ -53,11 +53,11 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
     try {
-        const { phone, address, role, _id, ownername, shopname, category } = req.body;
+        const { phone, address, role, _id, ownername, shopname, category, deliverypartner_id, deliverypartner_phone, deliverypartner_name, deliverypartner_email } = req.body;
 
         // Validate required fields
         console.log('====================================');
-        console.log({ phone, address, role, _id, ownername, shopname, category } );
+        console.log({ phone, address, role, _id, ownername, shopname, category });
         console.log('====================================');
         if (!_id || !role) {
             return res.status(400).json({
@@ -119,11 +119,11 @@ export const updateProfile = async (req, res, next) => {
 
 
             if (phone) {
-                console.log("new phone",phone);
-                
+                console.log("new phone", phone);
+
                 const updatedUser = await shopkeeperModel.findByIdAndUpdate(
                     _id,
-                    {phone: phone}
+                    { phone: phone }
                     , { new: true, runValidators: true });
 
 
@@ -145,7 +145,7 @@ export const updateProfile = async (req, res, next) => {
                 );
                 await updatedUser.save();
                 console.log(updatedUser);
-                
+
                 return res.status(200).json({
                     success: true,
                     message: "Profile updated successfully",
@@ -180,11 +180,11 @@ export const updateProfile = async (req, res, next) => {
                 })
             }
 
-            if(address){
+            if (address) {
                 const updatedUser = await shopkeeperModel.findByIdAndUpdate(
 
                     _id,
-                    {shopaddress:address},
+                    { shopaddress: address },
                     { new: true, runValidators: true }
                 )
 
@@ -201,6 +201,49 @@ export const updateProfile = async (req, res, next) => {
                     message: "No fields to update"
                 });
             }
+        }
+
+        if (role == "edit_deliverypartner") {
+
+            if (deliverypartner_phone) {
+
+                const updatedUser = await shopkeeperModel.findOneAndUpdate(
+                    { "deliverypartners._id": deliverypartner_id },
+                    { "deliverypartners.$.phone": phone },
+                    { new: true, runValidators: true }
+                )
+            }
+
+            if (deliverypartner_name) {
+                const updatedUser = await shopkeeperModel.findOneAndUpdate(
+                    { "deliverypartners._id": deliverypartner_id },
+                    { "deliverypartners.$.name": deliverypartner_name },
+                    { new: true, runValidators: true }
+                )
+            }
+            if (deliverypartner_email) {
+                const updatedUser = await shopkeeperModel.findOneAndUpdate(
+                    { "deliverypartners._id": deliverypartner_id },
+                    { "deliverypartners.$.email": deliverypartner_email },
+                    { new: true, runValidators: true }
+                )
+            }
+        }
+
+        if(role == "delete_deliverypartner"){
+            const updatedUser = await shopkeeperModel.findOneAndUpdate(
+                { "deliverypartners._id": deliverypartner_id },
+                { $pull: { deliverypartners: { _id: deliverypartner_id } } },
+                { new: true, runValidators: true }
+            )
+        }
+
+        if(role == "add_deliverypartner"){
+            const updatedUser = await shopkeeperModel.findByIdAndUpdate(
+                _id,
+                { $push: { deliverypartners: { name: deliverypartner_name, email: deliverypartner_email, phone: deliverypartner_phone } } },
+                { new: true, runValidators: true }
+            )
         }
         // Update only the fields present in req.body
     } catch (error) {
