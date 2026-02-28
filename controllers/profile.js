@@ -4,29 +4,48 @@ import { shopkeeperModel } from "../models/shopkeeper.model.js"
 import jwt from "jsonwebtoken"
 
 export const getProfile = async (req, res, next) => {
-    let { token } = req.body
+    try {
+        const tokenFromBody = req.body?.token
+        const authHeader = req.headers?.authorization
+        const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined
+        const token = tokenFromBody || tokenFromHeader
 
-    let decoded = jwt.verify(token, process.env.secret)
+        if (!token || typeof token !== "string") {
+            return res.status(401).json({ success: false, message: "Token is required" })
+        }
 
-    // @ts-ignore
-    if (decoded.role === "customer") {
+        const decoded = jwt.verify(token, process.env.secret)
+
         // @ts-ignore
-        let user = await customerModel.findById(decoded.id).select(["-password", "-otp", "-otpExpireTime", '-restotpExpireTime', "-resetpassotp"])
-        return res.json({ success: true, user })
-    }
-    // @ts-ignore
-    else if (decoded.role === "shopkeeper") {
+        if (decoded.role === "customer") {
+            // @ts-ignore
+            let user = await customerModel.findById(decoded.id).select(["-password", "-otp", "-otpExpireTime", '-restotpExpireTime', "-resetpassotp"])
+            return res.json({ success: true, user })
+        }
         // @ts-ignore
-        let user = await shopkeeperModel.findById(decoded.id).select(["-password", "-otp", "-otpExpireTime", '-restotpExpireTime', "-resetpassotp"])
-        return res.json({ success: true, user })
-    }
-    // @ts-ignore
-    else if (decoded.role === "deliverypartner") {
+        else if (decoded.role === "shopkeeper") {
+            // @ts-ignore
+            let user = await shopkeeperModel.findById(decoded.id).select(["-password", "-otp", "-otpExpireTime", '-restotpExpireTime', "-resetpassotp"])
+            return res.json({ success: true, user })
+        }
         // @ts-ignore
-        let user = await shopkeeperModel.findOne({ "deliverypartners._id": decoded._id })
-        return res.json({ success: true, user })
+        else if (decoded.role === "deliverypartner") {
+            // @ts-ignore
+            let user = await shopkeeperModel.findOne({ "deliverypartners._id": decoded.id })
+            return res.json({ success: true, user })
+        }
+
+        return res.status(400).json({ success: false, message: "Invalid token role" })
     }
-    //i want role from decoded token and then find user from that role and return user details
+    catch (error) {
+        if (error?.name === "JsonWebTokenError") {
+            return res.status(401).json({ success: false, message: "Invalid token" })
+        }
+        if (error?.name === "TokenExpiredError") {
+            return res.status(401).json({ success: false, message: "Token expired" })
+        }
+        next(error)
+    }
 
 
 
