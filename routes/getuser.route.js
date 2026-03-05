@@ -4,7 +4,7 @@ import { getuser } from "../controllers/getuser.js";
 const getuserroute = Router()
 
 getuserroute.post("/getuser", (req, res, next) => {
-    getuser(req, res, next)
+    getuser(req, res)
 })
 
 export default getuserroute             

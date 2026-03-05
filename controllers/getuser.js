@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import { customerModel } from "../models/customer.model.js";
 import { shopkeeperModel } from "../models/shopkeeper.model.js";
 import jwt from "jsonwebtoken"
-export const getuser = async (req, res, next) => {
+export const getuser = async (req, res) => {
     
     
     let {token}=req.body
