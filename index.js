@@ -7,13 +7,16 @@ import { verifyotproute } from './routes/sendotp.route.js'
 import shopekeeperrouter from './routes/saveshopekeeper.route.js'
 import deliverypartnerverifyroute from './routes/verifydeliverypartner.route.js'
 import getprofileroute from './routes/getprofile.js'
+import shopsrouter from './routes/shops.router.js'
 import cors from "cors"
+
 
 import loginroute from './routes/login.route.js'
 
 import forgotpassword from './routes/forgotpassword.route.js'
-import { get } from 'mongoose'
+ 
 import getuserroute from './routes/getuser.route.js'
+import products from './routes/products.route.js'
 dotenv.config()
 
 
@@ -34,6 +37,8 @@ app.use(loginroute)
 app.use(deliverypartnerverifyroute)
 app.use(getuserroute)
 app.use(getprofileroute)
+app.use(products)
+app.use(shopsrouter)
 app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);
