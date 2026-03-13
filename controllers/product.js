@@ -59,6 +59,15 @@ export const addproduct = async (req, res) => {
 
 export const getproducts = async (req, res) => {
 
+    if (!req.body.token) {
+        let id=req.params.id
+        let products=await productModel.findOne({shopkeeprid:id})
+        if(!products){
+            return res.json({ message: "No products found", products: [], success: true })
+        }
+        return res.status(200).json({ message: "Products fetched successfully", products: products.products || [], success: true })
+    }
+    
     let { token } = req.body
     let decode = jwt.decode(token)
     // @ts-ignore
