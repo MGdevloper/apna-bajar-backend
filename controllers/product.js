@@ -62,7 +62,7 @@ export const getproducts = async (req, res) => {
     if (!req.body.token) {
         let id=req.params.id
         
-        let products=await productModel.findOne({shopkeeprid:mongoose.Types.ObjectId(id)})
+        let products=await productModel.findOne({shopkeeprid:new mongoose.Types.ObjectId(id)})
         if(!products){
             return res.json({ message: "No products found", products: [], success: true })
         }
