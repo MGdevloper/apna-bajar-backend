@@ -61,6 +61,9 @@ export const getproducts = async (req, res) => {
 
     if (!req.body.token) {
         let id=req.params.id
+        console.log('====================================');
+        console.log(id);
+        console.log('====================================');
         
         let products=await productModel.findOne({shopkeeprid:new mongoose.Types.ObjectId(id)})
         if(!products){
