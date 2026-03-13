@@ -60,7 +60,7 @@ export const addproduct = async (req, res) => {
 export const getproducts = async (req, res) => {
 
     if (!req.body.token) {
-        let id=req.params.id
+        let id=req.body.id
         console.log('====================================');
         console.log(id);
         console.log('====================================');
