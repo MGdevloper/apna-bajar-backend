@@ -1,8 +1,14 @@
 import { shopkeeperModel } from "../models/shopkeeper.model.js"
-
+import jwt from "jsonwebtoken"
 export const getshops = async (req, res) => {
 
-    let { latitude, longitude } = req.body
+    let { latitude, longitude } = req.body.location
+    let decode = req.body.token
+    let decoded = jwt.verify(decode, process.env.secret)
+    
+    if (!decoded) {
+        return res.status(401).json({ message: "Unauthorized", success: false })
+    }
 
     let shops = await shopkeeperModel.aggregate([
         {
