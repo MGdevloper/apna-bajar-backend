@@ -84,7 +84,7 @@ export const deleteproduct = async (req, res) => {
     console.log('====================================');
     console.log(req.body);
     console.log('====================================');
-    let decode = jwt.verify(token, process.env.SECRET)
+    let decode = jwt.verify(token, process.env.secret)
     console.log('====================================');
     console.log(decode);
     console.log('====================================');
@@ -122,7 +122,7 @@ export const editproductname = async (req, res) => {
 
 
     let { product_id, token, newname } = req.body;
-    let shopkeeperid = jwt.verify(token, process.env.SECRET).id
+    let shopkeeperid = jwt.verify(token, process.env.secret).id
 
     let product = await productModel.findOneAndUpdate(
         { shopkeeprid: shopkeeperid, "products._id": product_id }
@@ -145,7 +145,7 @@ export const editproductname = async (req, res) => {
 export const addvariant = async (req, res) => {
 
     let { product_id, token, quantity, unit, price } = req.body;
-    let shopkeeperid = jwt.verify(token, process.env.SECRET).id
+    let shopkeeperid = jwt.verify(token, process.env.secret).id
 
     let product = await productModel.findOneAndUpdate(
 
@@ -176,7 +176,7 @@ export const addvariant = async (req, res) => {
 export const deletevariant = async (req, res) => {
 
     let { product_id, token, variant_id } = req.body;
-    let shopkeeperid = jwt.verify(token, process.env.SECRET).id
+    let shopkeeperid = jwt.verify(token, process.env.secret).id
     let product = await productModel.findOneAndUpdate(
 
         { shopkeeprid: shopkeeperid, "products._id": product_id },
@@ -195,7 +195,7 @@ export const deletevariant = async (req, res) => {
 export const editvariant = async (req, res) => {
 
     let { product_id, token, variant_id, quantity, unit, price } = req.body;
-    let shopkeeperid = jwt.verify(token, process.env.SECRET).id
+    let shopkeeperid = jwt.verify(token, process.env.secret).id
 
     let product = await productModel.findOneAndUpdate(
         { shopkeeprid: shopkeeperid, "products._id": product_id, "products.variants._id": variant_id },
@@ -212,7 +212,7 @@ export const editvariant = async (req, res) => {
                 { "p._id": product_id },
                 { "v._id": variant_id }
             ],
-            
+
             new: true
         }
 
