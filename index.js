@@ -9,7 +9,7 @@ import deliverypartnerverifyroute from './routes/verifydeliverypartner.route.js'
 import getprofileroute from './routes/getprofile.js'
 import shopsrouter from './routes/shops.router.js'
 import cors from "cors"
-
+import cart from './routes/carts.route.js'
 
 import loginroute from './routes/login.route.js'
 
@@ -37,8 +37,9 @@ app.use(loginroute)
 app.use(deliverypartnerverifyroute)
 app.use(getuserroute)
 app.use(getprofileroute)
-app.use(products)
+app.use(products)  
 app.use(shopsrouter)
+app.use(cart)
 app.listen(Number(process.env.PORT),"0.0.0.0",()=>{
     dbconnect();
     console.log(`http://${process.env.SERVER_IP}:` + process.env.PORT);

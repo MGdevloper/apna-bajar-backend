@@ -27,6 +27,7 @@ const CustomerSchema = new mongoose.Schema({
     unique: true
   },
 
+
   isVerified: {
     type: Boolean,
     default: false  

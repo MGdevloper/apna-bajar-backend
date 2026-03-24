@@ -23,8 +23,6 @@ export const getshops = async (req, res) => {
             }
         }
     ])
-    console.log("shops found:", shops);
-
 
     if (!shops || shops.length === 0) {
         return res.status(404).json({ message: "No shops found nearby", success: false })
