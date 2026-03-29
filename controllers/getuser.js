@@ -7,9 +7,13 @@ export const getuser = async (req, res) => {
     
     let {token}=req.body
 
+    try{
 
-    let decoded=jwt.verify(token,process.env.secret)
-
-    return res.json({success:true,user:decoded})
-
+        let decoded=jwt.verify(token,process.env.secret)
+    
+        return res.json({success:true,user:decoded})
+    }
+    catch(err){
+        return res.json({success:false,message:"Invalid token"})
+    }
 } 

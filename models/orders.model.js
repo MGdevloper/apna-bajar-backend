@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
 
+const generateOrderNumber = () => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    return `ORD-${Date.now()}-${randomSuffix}`;
+};
+
 
 let orderItemSchema = new mongoose.Schema({
 
-    itemname: {
+    itemName: {
         type: String,
         required: true
     }
@@ -13,27 +18,35 @@ let orderItemSchema = new mongoose.Schema({
         required: true,
     },
 
-    unit:{
-        type:String,
-        required:true,
-        enum:["kg","gram","liter","ml","piece","pack"]
+    variant: {
+        type: String,
+        required: true,
+        enum: ["kg", "gram", "liter", "ml", "piece", "pack"]
     }
 
     ,
-    prince:{
-        type:Number,
-        required:true,
-        min:0
+    price: {
+        type: Number,
+        required: true,
+        min: 0
     }
     ,
-    count:{
-        type:Number,
-        default:1,
-        min:1
-    }
+    count: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
+
 })
 let orderSchema = new mongoose.Schema(
     {
+        orderNumber: {
+            type: String,
+            required: true,
+            unique: true,
+            default: generateOrderNumber,
+            trim: true,
+        },
 
         customerId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -52,11 +65,8 @@ let orderSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        shopkeeperName: {
-            type: String,
-            required: true
-        }
-        ,        
+
+
         status: {
             type: String,
             enum: ["pending", "accepted", "rejected", "ready for pickup", "completed"],
@@ -64,13 +74,18 @@ let orderSchema = new mongoose.Schema(
 
         }
         ,
+        total: {
+            type: Number,
+            required: true,
+            min: 0
+        },
 
 
         items: [orderItemSchema]
 
     },
     { timestamps: true }
-)  
+)
 
 
 const orderModel = mongoose.model("order", orderSchema)
