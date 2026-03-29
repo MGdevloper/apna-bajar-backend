@@ -10,7 +10,7 @@ export const getcart = async (req, res, next) => {
     console.log('====================================');
     let token = req.body.token
 
-    let paylod = jwt.verify(token, process.env.SECRET)
+    let paylod = jwt.verify(token, process.env.secret)
 
     // @ts-ignore
     let cart = await cartModel.findOne({ customerId: paylod.id })
@@ -35,7 +35,7 @@ export const addtocart = async (req, res, next) => {
         console.log(token);
 
 
-        let paylod = jwt.verify(token, process.env.SECRET)
+        let paylod = jwt.verify(token, process.env.secret)
 
         let customerId = paylod.id
 
@@ -109,7 +109,7 @@ export const removefromcart = async (req, res, next) => {
 
     let token = req.body.customerId
 
-    let paylod = jwt.verify(token, process.env.SECRET)
+    let paylod = jwt.verify(token, process.env.secret)
     let customerId = paylod.id
 
     let variantId = req.body.variantId
@@ -133,7 +133,7 @@ export const clearcart = async (req, res, next) => {
 
 
     let token = req.body.customerId
-    let paylod = jwt.verify(token, process.env.SECRET)
+    let paylod = jwt.verify(token, process.env.secret)
     let customerId = paylod.id
 
     let user = await cartModel.findOneAndUpdate(
@@ -153,7 +153,7 @@ export const updatecart = async (req, res, next) => {
 
     let token = req.body.customerId
 
-    let paylod = jwt.verify(token, process.env.SECRET)
+    let paylod = jwt.verify(token, process.env.secret)
     let customerId = paylod.id
 
     let variantId = req.body.variantId

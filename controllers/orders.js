@@ -33,7 +33,7 @@ export const placeorder = async (req, res) => {
             return res.status(400).json({ success: false, message: "Token is required" });
         }
 
-        const payload = jwt.verify(token, process.env.SECRET);
+        const payload = jwt.verify(token, process.env.secret);
         // @ts-ignore
         const customerID = payload.id;
 
@@ -92,7 +92,7 @@ export const getorders = async (req, res) => {
             return res.status(400).json({ success: false, message: "Token is required" });
         }
 
-        const payload = jwt.verify(token, process.env.SECRET);
+        const payload = jwt.verify(token, process.env.secret);
         // @ts-ignore
         const shopkeeperId = payload.id;
 
@@ -115,7 +115,7 @@ export const getCustomerOrders = async (req, res) => {
             return res.status(400).json({ success: false, message: "Token is required" });
         }
 
-        const payload = jwt.verify(token, process.env.SECRET);
+        const payload = jwt.verify(token, process.env.secret);
         // @ts-ignore
         const customerId = payload.id;
 
@@ -148,7 +148,7 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid status" });
         }
 
-        const payload = jwt.verify(token, process.env.SECRET);
+        const payload = jwt.verify(token, process.env.secret);
         // @ts-ignore
         const shopkeeperId = payload.id;
 

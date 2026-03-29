@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
     // shopkeeper joins room
     socket.on("join_shopkeeper", (token) => {
         
-        let Pyload = jwt.verify(token, process.env.SECRET);
+        let Pyload = jwt.verify(token, process.env.secret);
         
 
 
@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
     socket.on("join_customer", (token) => {
 
         
-        let Pyload = jwt.verify(token, process.env.SECRET);
+        let Pyload = jwt.verify(token, process.env.secret);
         // @ts-ignore
 
         // @ts-ignore
