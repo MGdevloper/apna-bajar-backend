@@ -62,26 +62,37 @@ io.on("connection", (socket) => {
 
     // shopkeeper joins room
     socket.on("join_shopkeeper", (token) => {
-        
-        let Pyload = jwt.verify(token, process.env.secret);
-        
+        try {
+            let Pyload = jwt.verify(token, process.env.secret);
 
-
-        // @ts-ignore
-        socket.join(Pyload.id.toString())
+            // @ts-ignore
+            socket.join(Pyload.id.toString())
+        } catch (error) {
+            socket.emit("auth_error", "Invalid token")
+        }
 
 
     })
 
     // customer joins room
     socket.on("join_customer", (token) => {
+        try {
+            let Pyload = jwt.verify(token, process.env.secret);
+            // @ts-ignore
+            socket.join(Pyload.id.toString())
+        } catch (error) {
+            socket.emit("auth_error", "Invalid token")
+        }
+    })
 
-        
-        let Pyload = jwt.verify(token, process.env.secret);
-        // @ts-ignore
-
-        // @ts-ignore
-        socket.join(Pyload.id.toString())
+    socket.on("join_deliverypartner", (token) => {
+        try {
+            let Pyload = jwt.verify(token, process.env.secret);
+            // @ts-ignore
+            socket.join(Pyload.id.toString())
+        } catch (error) {
+            socket.emit("auth_error", "Invalid token")
+        }
     })
 
 

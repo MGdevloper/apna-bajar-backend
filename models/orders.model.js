@@ -66,10 +66,58 @@ let orderSchema = new mongoose.Schema(
             required: true
         },
 
+        deliveryPartnerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null,
+        },
+
+        deliveryPartnerName: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+
+        deliveryPartnerEarning: {
+            type: Number,
+            default: 25,
+            min: 0,
+        },
+
+        deliveryLocation: {
+            latitude: {
+                type: Number,
+                default: null,
+            },
+            longitude: {
+                type: Number,
+                default: null,
+            },
+            heading: {
+                type: Number,
+                default: 0,
+            },
+            speed: {
+                type: Number,
+                default: 0,
+            },
+            updatedAt: {
+                type: Date,
+                default: null,
+            },
+        },
+
 
         status: {
             type: String,
-            enum: ["pending", "accepted", "rejected", "ready for pickup", "completed"],
+            enum: [
+                "pending",
+                "accepted",
+                "rejected",
+                "assigned_to_delivery",
+                "out_for_delivery",
+                "delivered",
+                "completed"
+            ],
             default: "pending"
 
         }
