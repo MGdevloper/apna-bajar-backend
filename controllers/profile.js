@@ -31,7 +31,28 @@ export const getProfile = async (req, res, next) => {
         // @ts-ignore
         else if (decoded.role === "deliverypartner") {
             // @ts-ignore
-            let user = await shopkeeperModel.findOne({ "deliverypartners._id": decoded.id })
+            const shop = await shopkeeperModel.findOne(
+                // @ts-ignore
+                { "deliverypartners._id": decoded.id },
+                { "deliverypartners.$": 1, isVerified: 1, createdAt: 1 }
+            )
+
+            const deliverypartner = shop?.deliverypartners?.[0]
+
+            if (!deliverypartner) {
+                return res.status(404).json({ success: false, message: "Delivery partner profile not found" })
+            }
+
+            const user = {
+                _id: deliverypartner._id,
+                name: deliverypartner.name,
+                email: deliverypartner.email,
+                phone: deliverypartner.phone,
+                role: "deliverypartner",
+                isVerified: Boolean(shop?.isVerified),
+                createdAt: shop?.createdAt,
+            }
+
             return res.json({ success: true, user })
         }
 

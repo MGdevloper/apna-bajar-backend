@@ -84,6 +84,7 @@ export const sendotp = async (req, res, next) => {
 }
 
 
+// @ts-ignore
 export const verifyotp = async (req, res, next) => {
     let { email, otp, role } = req.body
 

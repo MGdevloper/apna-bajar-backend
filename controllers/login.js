@@ -10,7 +10,9 @@ export const Login = async (req, res, next) => {
     
     let user = await customerModel.findOne({ email })
     console.log(user);
-    
+    if(user?.isVerified==false){
+        return res.json({ message: "Your account is not verified yet. Please verify your account to login.", success: false, reason: "not verified" ,email:user.email})
+    }
     if (user) {
         let result = await bcrypt.compare(password, user.password)
        

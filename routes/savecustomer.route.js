@@ -25,7 +25,7 @@ customersaveroute.post("/savecustomer", async (req, res, next) => {
 
     // Check if customer already exists (phone, email, fullname)
     let existingcustomer = await customerModel.findOne({ $or: [{ phone }, { email }, { name: fullname }] })
-    if (existingcustomer) {
+    if (existingcustomer && existingcustomer.isVerified==true) {
         if (existingcustomer.phone === phone) {
             return res.json({ reason: "already exists", message: "customer already exists with same phone" })
         }
@@ -37,10 +37,18 @@ customersaveroute.post("/savecustomer", async (req, res, next) => {
         }
     }
 
+    if(existingcustomer && existingcustomer.isVerified==false){
+        await customerModel.findByIdAndDelete(existingcustomer._id)
+    }
+
     // Check if email exists in shopkeeper model
     let existingShopkeeper = await shopkeeperModel.findOne({ email });
-    if (existingShopkeeper) {
+    if (existingShopkeeper && existingShopkeeper.isVerified==true) {
         return res.json({ reason: "already exists", message: "email already exists" });
+    }
+
+    if(existingShopkeeper && existingShopkeeper.isVerified==false){
+        await shopkeeperModel.findByIdAndDelete(existingShopkeeper._id)
     }
     
     let passwordHash=await bcrypt.hash(password,bcrypt.genSaltSync(10))
