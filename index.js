@@ -19,6 +19,7 @@ import getuserroute from './routes/getuser.route.js'
 import products from './routes/products.route.js'
 import ordersRouter from './routes/orders.route.js'
 import jwt from "jsonwebtoken"
+import ShopOpenCloseRoute from './routes/shopopencloseroute.js'
 dotenv.config()
 
 const app = express()
@@ -56,6 +57,8 @@ app.use(products)
 app.use(shopsrouter)
 app.use(cart)
 app.use(ordersRouter)
+app.use(ShopOpenCloseRoute)
+
 // 🔥 SOCKET CONNECTION
 io.on("connection", (socket) => {
 

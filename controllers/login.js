@@ -1,9 +1,11 @@
+// @ts-ignore
 import mongoose from "mongoose";
 import { customerModel } from "../models/customer.model.js";
 import { shopkeeperModel } from "../models/shopkeeper.model.js";
 import bcrypt from 'bcrypt'
 import sendEmail from "../utils/sendmail.js";
 import jwt from "jsonwebtoken"
+// @ts-ignore
 export const Login = async (req, res, next) => {
     let { email, password } = req.body
     console.log(email,password);
@@ -11,7 +13,7 @@ export const Login = async (req, res, next) => {
     let user = await customerModel.findOne({ email })
     console.log(user);
     if(user?.isVerified==false){
-        return res.json({ message: "Your account is not verified yet. Please verify your account to login.", success: false, reason: "not verified" ,email:user.email})
+        return res.json({ message: "Your account is not verified yet. Please verify your account to login.", success: false, reason: "not verified" ,email:user.email, type: "customer"})
     }
     if (user) {
         let result = await bcrypt.compare(password, user.password)
@@ -26,6 +28,7 @@ export const Login = async (req, res, next) => {
             }
 
 
+            // @ts-ignore
             let token = jwt.sign(payload, process.env.secret, { expiresIn: "7d" })
             return res.json({ message: "Login successfully ✅", success: true, type: "customer" ,token})
 
@@ -39,6 +42,9 @@ export const Login = async (req, res, next) => {
 
         let user = await shopkeeperModel.findOne({ email })
         if (user) {
+            if(user?.isVerified==false){
+                return res.json({ message: "Your account is not verified yet. Please verify your account to login.", success: false, reason: "not verified" ,email:user.email, type: "shopkeeper"})
+            }
             let result = await bcrypt.compare(password, user.password)
             if (result == true) {
 
@@ -47,6 +53,7 @@ export const Login = async (req, res, next) => {
                     email: user.email,
                     role: "shopkeeper"
                 }
+                // @ts-ignore
                 let token = jwt.sign(payload, process.env.secret, { expiresIn: "7d" })
 
                 return res.json({ message: "Login successfully ✅", success: true, type: "shopkeeper", token })
@@ -65,6 +72,7 @@ export const Login = async (req, res, next) => {
 
 }
 
+// @ts-ignore
 export const deliverypartnerLogin = async (req, res, next) => {
     let { email } = req.body
 
@@ -79,11 +87,14 @@ export const deliverypartnerLogin = async (req, res, next) => {
 
 
     let deliverypartners = shop.deliverypartners.find(partner => partner.email === email)
+    // @ts-ignore
     deliverypartners.otp = await bcrypt.hash(otp, 10)
+    // @ts-ignore
     deliverypartners.otpExpireTime = otpExpireTime
     await shop.save()
     try {
 
+        // @ts-ignore
         await sendEmail(email, deliverypartners.name, "Login OTP", `<h3> Your OTP for login is </h3> <P> <b>${otp}</b> .It will expire in 5 minutes.</p>`)
         return res.json({ message: "OTP sent successfully ✅", success: true })
     }

@@ -1,9 +1,11 @@
 import { shopkeeperModel } from "../models/shopkeeper.model.js"
 import jwt from "jsonwebtoken"
+// @ts-ignore
 export const getshops = async (req, res) => {
 
     let { latitude, longitude } = req.body.location
     let decode = req.body.token
+    // @ts-ignore
     let decoded = jwt.verify(decode, process.env.secret)
     
     if (!decoded) {
@@ -25,7 +27,7 @@ export const getshops = async (req, res) => {
     ])
 
     if (!shops || shops.length === 0) {
-        return res.status(404).json({ message: "No shops found nearby", success: false })
+        return res.status(200).json({ message: "No shops found nearby", success: false })
     }
 
     return res.status(200).json({ message: "Shops retrieved successfully", shops, success: true })

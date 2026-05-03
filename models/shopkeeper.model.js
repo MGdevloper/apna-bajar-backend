@@ -80,6 +80,11 @@ const ShopkeeperSchema = new mongoose.Schema({
     type: [deliverypartnerschema],
     required: true
   },
+
+  isShopOpen: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
