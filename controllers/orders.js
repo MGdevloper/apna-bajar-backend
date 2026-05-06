@@ -9,6 +9,7 @@ const buildOrderNumber = () => {
     return `APNA-${Date.now()}-${randomSuffix}`;
 };
 
+// @ts-ignore
 const getTokenFromRequest = (req) => {
     const authHeader = req.headers.authorization || "";
     const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
@@ -25,8 +26,48 @@ const getTokenFromRequest = (req) => {
     );
 };
 
+// @ts-ignore
 const decodeToken = (token) => jwt.verify(token, process.env.secret);
 
+// @ts-ignore
+const extractCustomerLocation = (customer) => {
+    const coordinates = customer?.address?.location?.coordinates;
+    if (!Array.isArray(coordinates) || coordinates.length < 2) {
+        return null;
+    }
+
+    const longitude = Number(coordinates[0]);
+    const latitude = Number(coordinates[1]);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+
+    return { latitude, longitude };
+};
+
+// @ts-ignore
+const attachCustomerLocationToOrder = async (order) => {
+    if (!order) return order;
+
+    if (order.customerLocation?.latitude != null && order.customerLocation?.longitude != null) {
+        return order;
+    }
+
+    const customer = await customerModel.findById(order.customerId).select('address.location').lean();
+    const customerLocation = extractCustomerLocation(customer);
+
+    if (!customerLocation) {
+        return order;
+    }
+
+    return {
+        ...order,
+        customerLocation,
+    };
+};
+
+// @ts-ignore
 export const placeorder = async (req, res) => {
     try {
         const orders = req.body?.order || {};
@@ -50,6 +91,9 @@ export const placeorder = async (req, res) => {
 
         for (const shopid in orders) {
             const orderdetails = orders[shopid];
+            console.log("orderdetailes:", orderdetails);
+
+            const customerLocation = extractCustomerLocation(customer);
 
             const neworder = new orderModel({
                 orderNumber: buildOrderNumber(),
@@ -59,6 +103,8 @@ export const placeorder = async (req, res) => {
                 deliveryPartnerEarning: 25,
                 items: orderdetails.items,
                 total: orderdetails.total,
+                customerNumber: customer.phone,
+                customerLocation,
                 status: "pending"
             });
 
@@ -88,6 +134,7 @@ export const placeorder = async (req, res) => {
 
 }
 
+// @ts-ignore
 export const getorders = async (req, res) => {
 
     try {
@@ -112,6 +159,7 @@ export const getorders = async (req, res) => {
 
 }
 
+// @ts-ignore
 export const getCustomerOrders = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -127,7 +175,9 @@ export const getCustomerOrders = async (req, res) => {
             .find({ customerId })
             .sort({ createdAt: -1 });
 
-        return res.json({ success: true, orders });
+        const ordersWithLocation = await Promise.all(orders.map(attachCustomerLocationToOrder));
+
+        return res.json({ success: true, orders: ordersWithLocation });
     }
     catch (err) {
         return res.status(401).json({ success: false, message: "Invalid token" });
@@ -135,6 +185,7 @@ export const getCustomerOrders = async (req, res) => {
 
 }
 
+// @ts-ignore
 export const updateOrderStatus = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -178,6 +229,7 @@ export const updateOrderStatus = async (req, res) => {
 
 }
 
+// @ts-ignore
 export const assignDeliveryPartner = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -236,6 +288,7 @@ export const assignDeliveryPartner = async (req, res) => {
     }
 };
 
+// @ts-ignore
 export const getDeliveryPartnerOrders = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -251,12 +304,15 @@ export const getDeliveryPartnerOrders = async (req, res) => {
             .find({ deliveryPartnerId })
             .sort({ createdAt: -1 });
 
-        return res.json({ success: true, orders });
+        const ordersWithLocation = await Promise.all(orders.map(attachCustomerLocationToOrder));
+
+        return res.json({ success: true, orders: ordersWithLocation });
     } catch (err) {
         return res.status(401).json({ success: false, message: "Invalid token" });
     }
 };
 
+// @ts-ignore
 export const updateDeliveryOrderStatus = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -299,6 +355,7 @@ export const updateDeliveryOrderStatus = async (req, res) => {
     }
 };
 
+// @ts-ignore
 export const updateDeliveryLocation = async (req, res) => {
     try {
         const token = getTokenFromRequest(req);
@@ -336,9 +393,19 @@ export const updateDeliveryLocation = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
+        const updatedOrderData = /** @type {any} */ (updatedOrder);
+
         io.to(String(updatedOrder.customerId)).emit("delivery_location_updated", updatedOrder);
         io.to(String(updatedOrder.shopkeeperId)).emit("delivery_location_updated", updatedOrder);
         io.to(String(deliveryPartnerId)).emit("delivery_location_updated", updatedOrder);
+        io.to(`order_${String(updatedOrder._id)}`).emit("updateLocation", {
+            orderId: String(updatedOrder._id),
+            latitude: Number(updatedOrderData.deliveryLocation?.latitude),
+            longitude: Number(updatedOrderData.deliveryLocation?.longitude),
+            heading: Number(updatedOrderData.deliveryLocation?.heading || 0),
+            speed: Number(updatedOrderData.deliveryLocation?.speed || 0),
+            updatedAt: updatedOrderData.deliveryLocation?.updatedAt || new Date(),
+        });
 
         return res.json({ success: true, order: updatedOrder });
     } catch (err) {

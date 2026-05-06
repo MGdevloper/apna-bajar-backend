@@ -56,6 +56,22 @@ let orderSchema = new mongoose.Schema(
 
         },
 
+        customerNumber: {
+            type: Number,
+            required: true
+        },
+
+        customerLocation: {
+            latitude: {
+                type: Number,
+                default: null,
+            },
+            longitude: {
+                type: Number,
+                default: null,
+            },
+        },
+
         shopkeeperId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,

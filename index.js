@@ -20,6 +20,7 @@ import products from './routes/products.route.js'
 import ordersRouter from './routes/orders.route.js'
 import jwt from "jsonwebtoken"
 import ShopOpenCloseRoute from './routes/shopopencloseroute.js'
+import orderModel from './models/orders.model.js'
 dotenv.config()
 
 const app = express()
@@ -66,6 +67,7 @@ io.on("connection", (socket) => {
     // shopkeeper joins room
     socket.on("join_shopkeeper", (token) => {
         try {
+            // @ts-ignore
             let Pyload = jwt.verify(token, process.env.secret);
 
             // @ts-ignore
@@ -80,6 +82,7 @@ io.on("connection", (socket) => {
     // customer joins room
     socket.on("join_customer", (token) => {
         try {
+            // @ts-ignore
             let Pyload = jwt.verify(token, process.env.secret);
             // @ts-ignore
             socket.join(Pyload.id.toString())
@@ -90,11 +93,82 @@ io.on("connection", (socket) => {
 
     socket.on("join_deliverypartner", (token) => {
         try {
+            // @ts-ignore
             let Pyload = jwt.verify(token, process.env.secret);
             // @ts-ignore
             socket.join(Pyload.id.toString())
         } catch (error) {
             socket.emit("auth_error", "Invalid token")
+        }
+    })
+
+    socket.on("joinOrderRoom", (roomName) => {
+        if (!roomName || typeof roomName !== "string") {
+            return;
+        }
+        socket.join(roomName);
+    })
+
+    socket.on("driverLocation", async (payload, ack) => {
+        try {
+            const { token, orderId, latitude, longitude, heading, speed } = payload || {};
+
+            if (!token || !orderId || latitude == null || longitude == null) {
+                if (typeof ack === "function") {
+                    ack({ success: false, message: "token, orderId, latitude and longitude are required" });
+                }
+                return;
+            }
+
+            // @ts-ignore
+            const decoded = jwt.verify(token, process.env.secret);
+            // @ts-ignore
+            const deliveryPartnerId = String(decoded.id);
+
+            const updatedOrder = await orderModel.findOneAndUpdate(
+                { _id: orderId, deliveryPartnerId },
+                {
+                    $set: {
+                        deliveryLocation: {
+                            latitude: Number(latitude),
+                            longitude: Number(longitude),
+                            heading: Number(heading || 0),
+                            speed: Number(speed || 0),
+                            updatedAt: new Date(),
+                        },
+                    },
+                },
+                { new: true }
+            );
+
+            if (!updatedOrder) {
+                if (typeof ack === "function") {
+                    ack({ success: false, message: "Order not found" });
+                }
+                return;
+            }
+
+            io.to(String(updatedOrder.customerId)).emit("delivery_location_updated", updatedOrder);
+            io.to(String(updatedOrder.shopkeeperId)).emit("delivery_location_updated", updatedOrder);
+            io.to(deliveryPartnerId).emit("delivery_location_updated", updatedOrder);
+            io.to(`order_${String(updatedOrder._id)}`).emit("updateLocation", {
+                orderId: String(updatedOrder._id),
+                latitude: Number(updatedOrder.deliveryLocation?.latitude),
+                longitude: Number(updatedOrder.deliveryLocation?.longitude),
+                heading: Number(updatedOrder.deliveryLocation?.heading || 0),
+                speed: Number(updatedOrder.deliveryLocation?.speed || 0),
+                updatedAt: updatedOrder.deliveryLocation?.updatedAt || new Date(),
+            });
+
+            if (typeof ack === "function") {
+                ack({ success: true, orderId: String(updatedOrder._id) });
+            }
+        } catch (error) {
+            console.error("driverLocation update failed:", error);
+            socket.emit("location_error", "Failed to update driver location");
+            if (typeof ack === "function") {
+                ack({ success: false, message: "Failed to update driver location" });
+            }
         }
     })
 
