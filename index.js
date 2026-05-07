@@ -136,11 +136,13 @@ io.on("connection", (socket) => {
 
     socket.on("deliveryLocationUpdate", (data) => {
         let { token, customerId, latitude, longitude } = data;
-
+        console.log("delivery location called");
+        
         try{
             let Pyload = jwt.verify(token, process.env.secret);
 
             let deliveryPartnerId = Pyload.id;
+
             socket.to(customerId).emit("sendDeliveryLocationToCustomer", {
                 latitude,
                 longitude,
@@ -148,6 +150,8 @@ io.on("connection", (socket) => {
             })
         }
         catch(error){
+            console.log(error);
+            
             socket.emit("auth_error", "Invalid token");
             return;
         }
