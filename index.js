@@ -137,6 +137,9 @@ io.on("connection", (socket) => {
     socket.on("deliveryLocationUpdate", async (data) => {
         try {
             const { token, orderId, customerId, latitude, longitude, heading, speed } = data || {};
+
+            console.log(data);
+            
             const rawToken = typeof token === "string" ? token : token?.token;
 
             console.log("📍 deliveryLocationUpdate received:", { orderId, customerId, latitude, longitude });
