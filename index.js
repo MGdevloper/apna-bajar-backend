@@ -109,7 +109,7 @@ io.on("connection", (socket) => {
         }
         socket.join(roomName);
     })
-    socket.on("customerLocationUpdate", (data) => {
+    socket.on("customerLocationUpdate", async(data) => {
         console.log(data);
 
         let deliveryPartnerId=await orderModel.findById(data.orderId).select("deliveryPartnerId");
