@@ -138,6 +138,8 @@ io.on("connection", (socket) => {
         try {
             const { customerId, latitude, longitude, heading, speed } = data || {};
 
+            console.log(data);
+            
             console.log("📍 deliveryLocationUpdate received:", { customerId, latitude, longitude });
 
             if (!customerId || latitude == null || longitude == null) {
