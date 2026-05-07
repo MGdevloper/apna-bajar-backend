@@ -1,3 +1,4 @@
+// @ts-nocheck
 import express from 'express'
 import dotenv from 'dotenv'
 import http from "http"
@@ -109,7 +110,17 @@ io.on("connection", (socket) => {
         socket.join(roomName);
     })
     socket.on("customerLocationUpdate", (data) => {
-        console.log(data);
+        let token = data.token;
+        try {
+
+            let Pyload = jwt.verify(token, process.env.secret);
+
+            console.log(Pyload);
+            
+        } catch (error) {
+            socket.emit("auth_error", "Invalid token");
+            return;
+        }
         
     })
 
