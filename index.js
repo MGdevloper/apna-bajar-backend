@@ -144,7 +144,7 @@ io.on("connection", (socket) => {
             socket.to(customerId).emit("sendDeliveryLocationToCustomer", {
                 latitude,
                 longitude,
-                deliveryPartnerId
+                
             })
         }
         catch(error){
