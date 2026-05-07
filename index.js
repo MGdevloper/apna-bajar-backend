@@ -135,6 +135,8 @@ io.on("connection", (socket) => {
     })
 
     socket.on("deliveryLocationUpdate", (data) => {
+        console.log(data);
+        
         let {  customerId, latitude, longitude } = data;
         
         console.log("delivery location called");
