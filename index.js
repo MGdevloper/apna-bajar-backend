@@ -136,33 +136,20 @@ io.on("connection", (socket) => {
 
     socket.on("deliveryLocationUpdate", async (data) => {
         try {
-            const { orderId, customerId, latitude, longitude, heading, speed, deliveryPartnerId } = data || {};
+            const { customerId, latitude, longitude, heading, speed } = data || {};
 
-            console.log("📍 deliveryLocationUpdate received:", { orderId, customerId, latitude, longitude });
+            console.log("📍 deliveryLocationUpdate received:", { customerId, latitude, longitude });
 
-            if (!orderId || !customerId || latitude == null || longitude == null) {
+            if (!customerId || latitude == null || longitude == null) {
                 console.log("❌ Missing required fields");
-                socket.emit("location_error", "orderId, customerId, latitude and longitude are required");
+                socket.emit("location_error", "customerId, latitude and longitude are required");
                 return;
             }
 
-            const order = await orderModel.findOne({
-                _id: orderId,
-                customerId,
-            });
-
-            if (!order) {
-                console.log("❌ Order not found. Query: orderId=", orderId, "customerId=", customerId);
-                socket.emit("location_error", "Order not found for this customer");
-                return;
-            }
-
-            console.log("✅ Order found:", order._id);
+            console.log("✅ Location data valid");
 
             const locationPayload = {
-                orderId: String(order._id),
-                customerId: String(order.customerId),
-                deliveryPartnerId: deliveryPartnerId || String(order.deliveryPartnerId),
+                customerId: String(customerId),
                 latitude: Number(latitude),
                 longitude: Number(longitude),
                 heading: Number(heading || 0),
@@ -170,14 +157,11 @@ io.on("connection", (socket) => {
                 updatedAt: new Date(),
             };
 
-            const customerRoomId = String(order.customerId);
-            const orderRoomId = `order_${String(order._id)}`;
+            const customerRoomId = String(customerId);
             
             console.log("📤 Emitting to customer room:", customerRoomId);
-            console.log("📤 Emitting to order room:", orderRoomId);
 
             io.to(customerRoomId).emit("sendDeliveryLocationToCustomer", locationPayload);
-            io.to(orderRoomId).emit("sendDeliveryLocationToCustomer", locationPayload);
 
             socket.emit("location_success", "Location updated successfully");
             console.log("✅ Location emitted successfully");
