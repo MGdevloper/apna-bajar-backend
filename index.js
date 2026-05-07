@@ -112,25 +112,21 @@ io.on("connection", (socket) => {
     socket.on("customerLocationUpdate", (data) => {
         console.log(data);
 
-        let token = data.token.token;
-        console.log(token);
+        let deliveryPartnerId=await orderModel.findById(data.orderId).select("deliveryPartnerId");
 
-        try {
+         deliveryPartnerId=deliveryPartnerId?.deliveryPartnerId;
 
-            let Pyload = jwt.verify(token, process.env.secret);
+         console.log("deliveryid",deliveryPartnerId);
+         io.to(String(deliveryPartnerId)).emit("sendCustomerLocationToDriver", {
+            latitude: data.latitude,
+            longitude: data.longitude,
+        })
+         
 
-            let customerId = Pyload.id;
 
-            socket.emit("sendCustomerLocationToDriver", {
-                latitude: data.latitude,
-                longitude: data.longitude,
-                customerId: customerId
-            });
+        
 
-        } catch (error) {
-            socket.emit("auth_error", "Invalid token");
-            return;
-        }
+        
 
     })
 
