@@ -307,7 +307,7 @@ io.on("connection", (socket) => {
                 return;
             }
 
-            let order = await orderModel.findOne({ orderNumber: orderId }).select("deliveryPartnerId customerId");
+            let order = await orderModel.findOne({ _id: orderId }).select("deliveryPartnerId customerId");
 
             if (!order) {
                 console.log("❌ Order not found:", orderId);
