@@ -136,33 +136,24 @@ io.on("connection", (socket) => {
 
     socket.on("deliveryLocationUpdate", async (data) => {
         try {
-            const { token, orderId, customerId, latitude, longitude, heading, speed } = data || {};
-
-            console.log(data);
-            
-            const rawToken = typeof token === "string" ? token : token?.token;
+            const { orderId, customerId, latitude, longitude, heading, speed, deliveryPartnerId } = data || {};
 
             console.log("📍 deliveryLocationUpdate received:", { orderId, customerId, latitude, longitude });
 
-            if (!rawToken || !orderId || !customerId || latitude == null || longitude == null) {
+            if (!orderId || !customerId || latitude == null || longitude == null) {
                 console.log("❌ Missing required fields");
-                socket.emit("location_error", "token, orderId, customerId, latitude and longitude are required");
+                socket.emit("location_error", "orderId, customerId, latitude and longitude are required");
                 return;
             }
-
-            const payload = jwt.verify(rawToken, process.env.secret);
-            const deliveryPartnerId = payload.id;
-            console.log("✅ Token verified, deliveryPartnerId:", deliveryPartnerId);
 
             const order = await orderModel.findOne({
                 _id: orderId,
                 customerId,
-                deliveryPartnerId,
             });
 
             if (!order) {
-                console.log("❌ Order not found. Query: orderId=", orderId, "customerId=", customerId, "deliveryPartnerId=", deliveryPartnerId);
-                socket.emit("location_error", "Order not found for this customer and delivery partner");
+                console.log("❌ Order not found. Query: orderId=", orderId, "customerId=", customerId);
+                socket.emit("location_error", "Order not found for this customer");
                 return;
             }
 
@@ -171,7 +162,7 @@ io.on("connection", (socket) => {
             const locationPayload = {
                 orderId: String(order._id),
                 customerId: String(order.customerId),
-                deliveryPartnerId: String(deliveryPartnerId),
+                deliveryPartnerId: deliveryPartnerId || String(order.deliveryPartnerId),
                 latitude: Number(latitude),
                 longitude: Number(longitude),
                 heading: Number(heading || 0),
@@ -192,7 +183,7 @@ io.on("connection", (socket) => {
             console.log("✅ Location emitted successfully");
         } catch (error) {
             console.log("❌ deliveryLocationUpdate failed:", error);
-            socket.emit("auth_error", "Invalid token");
+            socket.emit("location_error", error.message);
         }
     })
 
