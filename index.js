@@ -112,7 +112,9 @@ io.on("connection", (socket) => {
     socket.on("customerLocationUpdate", (data) => {
         console.log(data);
         
-        let token = data.token;
+        let token = data.token.token;
+        console.log(token);
+        
         try {
 
             let Pyload = jwt.verify(token, process.env.secret);
