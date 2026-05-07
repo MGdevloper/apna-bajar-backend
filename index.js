@@ -327,8 +327,7 @@ io.on("connection", (socket) => {
 
             console.log("📤 Emitting to deliveryPartnerId:", String(deliveryPartnerId));
 
-            // ✅ EMIT ONLY TO SPECIFIC DELIVERY PARTNER (CHECK LINE 142!)
-            socket.emit("sendCustomerLocationToDriver", {
+              io.to(String(deliveryPartnerId)).emit("sendCustomerLocationToDriver", {
                 customerId: String(order.customerId),
                 latitude: Number(latitude),
                 longitude: Number(longitude),
