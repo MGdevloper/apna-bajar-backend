@@ -55,7 +55,7 @@ app.use(loginroute)
 app.use(deliverypartnerverifyroute)
 app.use(getuserroute)
 app.use(getprofileroute)
-app.use(products)  
+app.use(products)
 app.use(shopsrouter)
 app.use(cart)
 app.use(ordersRouter)
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
             // @ts-ignore
             let Pyload = jwt.verify(token, process.env.secret);
             // @ts-ignore
- socket.join(Pyload.id.toString())
+            socket.join(Pyload.id.toString())
         } catch (error) {
             socket.emit("auth_error", "Invalid token")
         }
@@ -111,51 +111,86 @@ io.on("connection", (socket) => {
     })
     socket.on("customerLocationUpdate", (data) => {
         console.log(data);
-        
+
         let token = data.token.token;
         console.log(token);
-        
+
         try {
 
             let Pyload = jwt.verify(token, process.env.secret);
 
             let customerId = Pyload.id;
 
-            socket.emit("sendCustomerLocationToDriver", { 
+            socket.emit("sendCustomerLocationToDriver", {
                 latitude: data.latitude,
                 longitude: data.longitude,
                 customerId: customerId
-             });
-            
+            });
+
         } catch (error) {
             socket.emit("auth_error", "Invalid token");
             return;
         }
-        
+
     })
 
-    socket.on("deliveryLocationUpdate", (data) => {
-        console.log(data);
-        
-        let {  customerId, latitude, longitude } = data;
-        
-        console.log("delivery location called");
-        
-        try{
+    socket.on("deliveryLocationUpdate", async (data) => {
+        try {
+            const { token, orderId, customerId, latitude, longitude, heading, speed } = data || {};
+            const rawToken = typeof token === "string" ? token : token?.token;
 
-            socket.to(customerId).emit("sendDeliveryLocationToCustomer", {
-                latitude,
-                longitude,
-                
-            })
-        }
-        catch(error){
-            console.log(error);
+            console.log("📍 deliveryLocationUpdate received:", { orderId, customerId, latitude, longitude });
+
+            if (!rawToken || !orderId || !customerId || latitude == null || longitude == null) {
+                console.log("❌ Missing required fields");
+                socket.emit("location_error", "token, orderId, customerId, latitude and longitude are required");
+                return;
+            }
+
+            const payload = jwt.verify(rawToken, process.env.secret);
+            const deliveryPartnerId = payload.id;
+            console.log("✅ Token verified, deliveryPartnerId:", deliveryPartnerId);
+
+            const order = await orderModel.findOne({
+                _id: orderId,
+                customerId,
+                deliveryPartnerId,
+            });
+
+            if (!order) {
+                console.log("❌ Order not found. Query: orderId=", orderId, "customerId=", customerId, "deliveryPartnerId=", deliveryPartnerId);
+                socket.emit("location_error", "Order not found for this customer and delivery partner");
+                return;
+            }
+
+            console.log("✅ Order found:", order._id);
+
+            const locationPayload = {
+                orderId: String(order._id),
+                customerId: String(order.customerId),
+                deliveryPartnerId: String(deliveryPartnerId),
+                latitude: Number(latitude),
+                longitude: Number(longitude),
+                heading: Number(heading || 0),
+                speed: Number(speed || 0),
+                updatedAt: new Date(),
+            };
+
+            const customerRoomId = String(order.customerId);
+            const orderRoomId = `order_${String(order._id)}`;
             
-            socket.emit("auth_error", "Invalid token");
-            return;
-        }
+            console.log("📤 Emitting to customer room:", customerRoomId);
+            console.log("📤 Emitting to order room:", orderRoomId);
 
+            io.to(customerRoomId).emit("sendDeliveryLocationToCustomer", locationPayload);
+            io.to(orderRoomId).emit("sendDeliveryLocationToCustomer", locationPayload);
+
+            socket.emit("location_success", "Location updated successfully");
+            console.log("✅ Location emitted successfully");
+        } catch (error) {
+            console.log("❌ deliveryLocationUpdate failed:", error);
+            socket.emit("auth_error", "Invalid token");
+        }
     })
 
 
