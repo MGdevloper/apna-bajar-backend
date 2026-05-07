@@ -110,6 +110,8 @@ io.on("connection", (socket) => {
         socket.join(roomName);
     })
     socket.on("customerLocationUpdate", (data) => {
+        console.log(data);
+        
         let token = data.token;
         try {
 
