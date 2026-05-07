@@ -112,8 +112,10 @@ io.on("connection", (socket) => {
     socket.on("customerLocationUpdate", async(data) => {
         console.log(data);
 
-        let deliveryPartnerId=await orderModel.findById(data.orderId).select("deliveryPartnerId");
-
+        let deliveryPartnerId=await orderModel.findOne({orderNumber:data.orderId}).select("deliveryPartnerId");
+        console.log();
+        
+        console.log("befor deliveryid",deliveryPartnerId);
          deliveryPartnerId=deliveryPartnerId?.deliveryPartnerId;
 
          console.log("deliveryid",deliveryPartnerId);
