@@ -114,7 +114,7 @@
 
 // //         let deliveryPartnerId=await orderModel.findOne({orderNumber:data.orderId}).select("deliveryPartnerId");
 // //         console.log();
-        
+
 // //         console.log("befor deliveryid",deliveryPartnerId);
 // //          deliveryPartnerId=deliveryPartnerId?.deliveryPartnerId;
 
@@ -123,13 +123,13 @@
 // //             latitude: data.latitude,
 // //             longitude: data.longitude,
 // //         })
-         
+
 
 
 //         token, proceomer// Id, latitu// de, longitude, heading, speed } = data || {};
 
 //           //   console.log(d// ata);
-            
+
 //             console.log("📍 deliveryLocationUpdate received:", { c// ustomerId, latitude, longitude });
 
 //         //     if (!customerId || latitude == null || longitude == null) {
@@ -150,7 +150,7 @@
 //             };
 
 //           //   const customerRoomId = String(customerId);// 
-            
+
 //             console.log(// "📤 Emitting to cu// stomer room:", customerRoomId);
 
 //             io.to(customerRoomId).e// mit("sendDeliveryLocationToCustomer", locationPayload);
@@ -295,7 +295,7 @@ io.on("connection", (socket) => {
         socket.join(roomName);
     })
 
-    socket.on("customerLocationUpdate", async(data) => {
+    socket.on("customerLocationUpdate", async (data) => {
         try {
             console.log("📍 customerLocationUpdate received:", data);
 
@@ -328,7 +328,7 @@ io.on("connection", (socket) => {
             console.log("📤 Emitting to deliveryPartnerId:", String(deliveryPartnerId));
 
             // ✅ EMIT ONLY TO SPECIFIC DELIVERY PARTNER (CHECK LINE 142!)
-            io.to(String(deliveryPartnerId)).emit("sendCustomerLocationToDriver", {
+            socket.emit("sendCustomerLocationToDriver", {
                 customerId: String(order.customerId),
                 latitude: Number(latitude),
                 longitude: Number(longitude),
