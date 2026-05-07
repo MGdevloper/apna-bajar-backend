@@ -68,6 +68,36 @@ const attachCustomerLocationToOrder = async (order) => {
 };
 
 // @ts-ignore
+const attachCustomerDetailsToOrder = async (order) => {
+    if (!order) return order;
+
+    if (order.customerId && order.customerNumber != null && order.customerName) {
+        return order;
+    }
+
+    const customer = await customerModel.findById(order.customerId)
+        .select('name phone address.location')
+        .lean();
+
+    if (!customer) {
+        return order;
+    }
+
+    return {
+        ...order,
+        customerName: order.customerName || customer.name || '',
+        customerNumber: order.customerNumber ?? customer.phone ?? null,
+        customerLocation: order.customerLocation || extractCustomerLocation(customer),
+    };
+};
+
+// @ts-ignore
+const enrichDeliveryOrder = async (order) => {
+    const withLocation = await attachCustomerLocationToOrder(order);
+    return attachCustomerDetailsToOrder(withLocation);
+};
+
+// @ts-ignore
 export const placeorder = async (req, res) => {
     try {
         const orders = req.body?.order || {};
@@ -217,10 +247,12 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        io.to(String(updatedOrder.shopkeeperId)).emit("order_status_updated", updatedOrder);
-        io.to(String(updatedOrder.customerId)).emit("order_status_updated", updatedOrder);
+        const enrichedOrder = await enrichDeliveryOrder(updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder);
 
-        return res.json({ success: true, order: updatedOrder });
+        io.to(String(updatedOrder.shopkeeperId)).emit("order_status_updated", enrichedOrder);
+        io.to(String(updatedOrder.customerId)).emit("order_status_updated", enrichedOrder);
+
+        return res.json({ success: true, order: enrichedOrder });
     }
     catch (err) {
         console.error("updateOrderStatus failed:", err);
@@ -277,11 +309,13 @@ export const assignDeliveryPartner = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found or not accepted" });
         }
 
-        io.to(String(shopkeeperId)).emit("order_status_updated", updatedOrder);
-        io.to(String(updatedOrder.customerId)).emit("order_status_updated", updatedOrder);
-        io.to(String(partner._id)).emit("order_assigned", updatedOrder);
+        const enrichedOrder = await enrichDeliveryOrder(updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder);
 
-        return res.json({ success: true, order: updatedOrder });
+        io.to(String(shopkeeperId)).emit("order_status_updated", enrichedOrder);
+        io.to(String(updatedOrder.customerId)).emit("order_status_updated", enrichedOrder);
+        io.to(String(partner._id)).emit("order_assigned", enrichedOrder);
+
+        return res.json({ success: true, order: enrichedOrder });
     } catch (err) {
         console.error("assignDeliveryPartner failed:", err);
         return res.status(500).json({ success: false, message: "Failed to assign delivery partner" });
@@ -304,7 +338,7 @@ export const getDeliveryPartnerOrders = async (req, res) => {
             .find({ deliveryPartnerId })
             .sort({ createdAt: -1 });
 
-        const ordersWithLocation = await Promise.all(orders.map(attachCustomerLocationToOrder));
+        const ordersWithLocation = await Promise.all(orders.map(enrichDeliveryOrder));
 
         return res.json({ success: true, orders: ordersWithLocation });
     } catch (err) {
@@ -344,11 +378,13 @@ export const updateDeliveryOrderStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        io.to(String(updatedOrder.shopkeeperId)).emit("order_status_updated", updatedOrder);
-        io.to(String(updatedOrder.customerId)).emit("order_status_updated", updatedOrder);
-        io.to(String(deliveryPartnerId)).emit("order_status_updated", updatedOrder);
+        const enrichedOrder = await enrichDeliveryOrder(updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder);
 
-        return res.json({ success: true, order: updatedOrder });
+        io.to(String(updatedOrder.shopkeeperId)).emit("order_status_updated", enrichedOrder);
+        io.to(String(updatedOrder.customerId)).emit("order_status_updated", enrichedOrder);
+        io.to(String(deliveryPartnerId)).emit("order_status_updated", enrichedOrder);
+
+        return res.json({ success: true, order: enrichedOrder });
     } catch (err) {
         console.error("updateDeliveryOrderStatus failed:", err);
         return res.status(500).json({ success: false, message: "Failed to update delivery status" });
@@ -395,9 +431,11 @@ export const updateDeliveryLocation = async (req, res) => {
 
         const updatedOrderData = /** @type {any} */ (updatedOrder);
 
-        io.to(String(updatedOrder.customerId)).emit("delivery_location_updated", updatedOrder);
-        io.to(String(updatedOrder.shopkeeperId)).emit("delivery_location_updated", updatedOrder);
-        io.to(String(deliveryPartnerId)).emit("delivery_location_updated", updatedOrder);
+        const enrichedOrder = await enrichDeliveryOrder(updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder);
+
+        io.to(String(updatedOrder.customerId)).emit("delivery_location_updated", enrichedOrder);
+        io.to(String(updatedOrder.shopkeeperId)).emit("delivery_location_updated", enrichedOrder);
+        io.to(String(deliveryPartnerId)).emit("delivery_location_updated", enrichedOrder);
         io.to(`order_${String(updatedOrder._id)}`).emit("updateLocation", {
             orderId: String(updatedOrder._id),
             latitude: Number(updatedOrderData.deliveryLocation?.latitude),
@@ -407,7 +445,7 @@ export const updateDeliveryLocation = async (req, res) => {
             updatedAt: updatedOrderData.deliveryLocation?.updatedAt || new Date(),
         });
 
-        return res.json({ success: true, order: updatedOrder });
+        return res.json({ success: true, order: enrichedOrder });
     } catch (err) {
         console.error("updateDeliveryLocation failed:", err);
         return res.status(500).json({ success: false, message: "Failed to update delivery location" });
